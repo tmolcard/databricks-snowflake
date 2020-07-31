@@ -1,4 +1,15 @@
 # Databricks notebook source
+dbutils.library.installPyPI("mlflow")
+dbutils.library.restartPython()
+
+# COMMAND ----------
+
+import mlflow
+
+mlflow.start_run()
+
+# COMMAND ----------
+
 # File storage session parameters
 
 appID = dbutils.secrets.get("datastorage", "app_id")
@@ -41,7 +52,10 @@ path = "raw_data/customers"
 file = "customers.csv"
 
 # Table parameters
-table_name = "LOCATIONS"
+table_name = "CUSTOMERS"
+
+mlflow.log_param("processed_file", "{}/{}".format(path, file))
+mlflow.log_param("table", table_name)
 
 # COMMAND ----------
 
@@ -78,6 +92,9 @@ df = df.withColumn("age", year - col("dob"))
 df.write \
   .format("snowflake") \
   .options(**sf_options) \
-  .option("dbtable", "CUSTOMERS") \
+  .option("dbtable", table_name) \
   .mode("append") \
   .save()
+
+mlflow.log_metric("inserted_rows", df.count())
+mlflow.end_run()
