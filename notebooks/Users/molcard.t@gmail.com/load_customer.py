@@ -32,14 +32,22 @@ sf_options = {
 
 # COMMAND ----------
 
+# Storage parameters
 storageAccountName = "restaurantaccount"
 fileSystemName = "restaurant"
+
+# File parameters
+path = "raw_data/customers"
+file = "customers.csv"
+
+# Table parameters
+table_name = "LOCATIONS"
 
 # COMMAND ----------
 
 # Read file on the file storage
 
-df = spark.read.csv("abfss://" + fileSystemName + "@" + storageAccountName + ".dfs.core.windows.net/raw_data/customers/customers.csv", header=True)
+df = spark.read.csv("abfss://" + fileSystemName + "@" + storageAccountName + ".dfs.core.windows.net/{path}/{file}".format(path=path, file=file), header=True)
 df.show()
 
 # COMMAND ----------
@@ -54,6 +62,15 @@ for col_name in ["created_at", "updated_at"]:
 
 df.printSchema()
 df.show()
+
+# COMMAND ----------
+
+# Compute age
+
+from datetime import datetime
+
+year = datetime.now().year
+df = df.withColumn("age", year - col("dob"))
 
 # COMMAND ----------
 
