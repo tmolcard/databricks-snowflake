@@ -1,4 +1,15 @@
 # Databricks notebook source
+dbutils.library.installPyPI("mlflow")
+dbutils.library.restartPython()
+
+# COMMAND ----------
+
+import mlflow
+
+mlflow.start_run()
+
+# COMMAND ----------
+
 # File storage session parameters
 
 appID = dbutils.secrets.get("datastorage", "app_id")
@@ -43,6 +54,9 @@ file = "orders.csv"
 # Table parameters
 table_name = "ORDERS"
 
+mlflow.log_param("processed_file", "{}/{}".format(path, file))
+mlflow.log_param("table", table_name)
+
 # COMMAND ----------
 
 # Read file on the file storage
@@ -74,3 +88,6 @@ df.write \
   .option("dbtable", table_name) \
   .mode("append") \
   .save()
+
+mlflow.log_metric("inserted_rows", df.count())
+mlflow.end_run()
